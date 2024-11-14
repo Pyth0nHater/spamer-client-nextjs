@@ -1,38 +1,41 @@
 'use client'
 
-import { useEffect, useState } from "react";
-import ProfileButton from "@/app/components/ProfileButton/ProfileButton";
+import { useEffect, useState } from 'react';
+import Script from 'next/script';
 
-const HomePage = () => {
-  const [profiles, setProfiles] = useState([]);
+export default function TelegramWebApp() {
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
-    const fetchProfiles = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/profiles?chatId=819850346');
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        setProfiles(data);
-      } catch (error) {
-        console.error('Error fetching profiles:', error);
-      }
-    };
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+      const tg = window.Telegram.WebApp;
+      tg.expand();
 
-    fetchProfiles();
+      const user = tg.initDataUnsafe?.user;
+      if (user) {
+        setUserData(user);
+      }
+
+      tg.MainButton.text = "Привет из Telegram Web App";
+      tg.MainButton.show();
+    }
   }, []);
 
   return (
-    <div className="mt-4">
-      <button className="ml-10 bg-black hover:bg-white text-black-700 font-semibold hover:text-black py-1 px-4 border border-white hover:border-transparent rounded">
-        add
-      </button>
-      {profiles.map((profile, index) => (
-        <ProfileButton key={index} username={profile.instagram} />
-      ))}
-    </div>
-  );
-};
+    <>
 
-export default HomePage;
+      <div>
+        <h1>Telegram Web App с использованием Next.js</h1>
+        {userData ? (
+          <div>
+            <p><strong>Имя пользователя:</strong> {userData.first_name} {userData.last_name}</p>
+            <p><strong>Юзернейм:</strong> {userData.username}</p>
+            <p><strong>ID:</strong> {userData.id}</p>
+          </div>
+        ) : (
+          <p>Не удалось получить данные о пользователе.</p>
+        )}
+      </div>
+    </>
+  );
+}
