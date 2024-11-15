@@ -1,10 +1,33 @@
-'use client'
+'use client';
 
 import { useEffect, useState } from 'react';
-import Script from 'next/script';
 
-export default function TelegramWebApp() {
-  const [userData, setUserData] = useState(null);
+type TelegramUser = {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+};
+
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: {
+        expand: () => void;
+        initDataUnsafe?: {
+          user?: TelegramUser;
+        };
+        MainButton: {
+          text: string;
+          show: () => void;
+        };
+      };
+    };
+  }
+}
+
+const HomePage = () => {
+  const [userData, setUserData] = useState<TelegramUser | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
@@ -23,7 +46,6 @@ export default function TelegramWebApp() {
 
   return (
     <>
-
       <div>
         <h1>Telegram Web App с использованием Next.js</h1>
         {userData ? (
@@ -39,3 +61,6 @@ export default function TelegramWebApp() {
     </>
   );
 }
+
+
+export default HomePage;

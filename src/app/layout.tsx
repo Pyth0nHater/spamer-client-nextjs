@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Script from 'next/script';
+import NavigationBar from "./components/NavigationBar/NavigationBar";
 
 
 
@@ -23,6 +24,7 @@ export default function RootLayout({
         strategy="beforeInteractive"
       />
         {children}
+        <NavigationBar/>
       </body>
     </html>
   );
