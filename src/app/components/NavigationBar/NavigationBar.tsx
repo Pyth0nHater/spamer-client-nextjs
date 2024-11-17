@@ -1,6 +1,6 @@
 const navigation = [
   { name: 'Home', href: '#', current: true },
-  { name: 'Sessions', href: '#', current: false },
+  { name: 'Accounts', href: '#', current: false },
   { name: 'Mailing', href: '#', current: false },
   { name: 'Settings', href: '#', current: false },
 ];
