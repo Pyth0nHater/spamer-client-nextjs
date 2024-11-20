@@ -6,6 +6,7 @@ import { StringSession } from 'telegram/sessions';
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
 import { ChevronUpDownIcon } from '@heroicons/react/20/solid';
 import Selector from '@/app/components/Selector/Selector';
+import axios from 'axios';
 
 // Replace these with your actual API credentials
 const apiId = 25171031; // Your API ID
@@ -20,6 +21,7 @@ interface Account {
 interface Folder {
   id: number;
   title: string;
+  users: Api.TypeInputPeer[]; 
 }
 
 const accounts: Account[] = [
@@ -68,10 +70,13 @@ const SessionsPage: React.FC = () => {
         .map((folder: Api.DialogFilter, index: number) => ({
           id: index,
           title: folder.title,
+          users: folder.includePeers
         }));
 
+      
       setFolders(fetchedFolders);
       setSelectedFolder(fetchedFolders[0] || null);
+      console.log(selectedFolder)
       await client.disconnect();
     } catch (error) {
       console.error('Error fetching folders:', error);
@@ -82,6 +87,46 @@ const SessionsPage: React.FC = () => {
   const handleMessageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setMessage(event.target.value);
   };
+
+  const handleSecondsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSeconds(event.target.value);
+  };
+
+  const handleBatchSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setBatchSize(event.target.value);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!selectedFolder) {
+      console.error('Folder is not selected.');
+      return;
+    }
+
+  setLoading(true);
+
+  try {
+    const data = {
+      userId: 2,
+      session: selectedAccount.session,
+      messageText: message,
+      "usernames": selectedFolder.users || [],
+      "batchSize": batchSize,
+      "waitTime": seconds
+    }
+
+    const response = await axios.post('http://localhost:5000/mailing/create', data, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log('Profile saved successfully:', response.data);
+  } catch (error) {
+    console.error('Error saving profile:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   return (
@@ -135,7 +180,6 @@ const SessionsPage: React.FC = () => {
             setSelectedItem={setSelectedAccount}
             label="Выберите аккаунт"
           />
-          {/* Existing Code */}
           <div className="mt-4">
             <button
               onClick={fetchFolders}
@@ -179,7 +223,6 @@ const SessionsPage: React.FC = () => {
           <label htmlFor="password" className="block text-base/10 font-medium text-white text-left">
             Сообщение
           </label>
-          {/* Поле для ввода пароля */}
           <input
             type="text"
             name="password"
@@ -191,29 +234,27 @@ const SessionsPage: React.FC = () => {
           <label htmlFor="password" className="block text-base/10 font-medium text-white text-left">
             Задержка в секундах
           </label>
-          {/* Поле для ввода пароля */}
           <input
             type="text"
             name="password"
             className="font-medium bg-gray-200 px-4 block w-full rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
-            value={message}
-            onChange={handleMessageChange} // Добавлен onChange
+            value={seconds}
+            onChange={handleSecondsChange} // Добавлен onChange
           />
 
           <label htmlFor="password" className="block text-base/10 font-medium text-white text-left">
             Размер партии
           </label>
-          {/* Поле для ввода пароля */}
           <input
             type="text"
             name="password"
             className="font-medium bg-gray-200 px-4 block w-full rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
-            value={message}
-            onChange={handleMessageChange} // Добавлен onChange
+            value={batchSize}
+            onChange={handleBatchSizeChange} // Добавлен onChange
           />
 
           <button
-            onClick={fetchFolders}
+            onClick={handleSaveProfile }
             className="w-full px-4 py-2 bg-indigo-600 text-white font-medium rounded-md mt-4"
             disabled={loading}
           >
